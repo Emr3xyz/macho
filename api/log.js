@@ -1,43 +1,49 @@
 export default async function handler(req, res) {
-    // URL parametrelerini al (user = auth_key, msg = eylem)
-    const { user, msg } = req.query;
+    const { user, msg, server, pcname } = req.query;
     
-    // BURAYI DÜZENLE: Kendi Discord Webhook URL'ni tırnak içine yapıştır
+    // 1. AYARLAR: Kendi Webhook URL'ni buraya yapıştır
     const webhookUrl = "https://discord.com/api/webhooks/1477690925999460472/1Ch7qrNSlcDX7Kh6YJFVaroeekfOzvJ_p0NuHW3CO4MivWrzfdZv7_yCSt9lc8Q9Z-Wq";
 
-    // BURAYI DÜZENLE: İzin verdiğin Macho Key'leri bu listeye ekle
+    // 2. LİSANS LİSTESİ: İzin verdiğin keyleri buraya ekle
     const izinliAnahtarlar = [
-        "16047513980263920565", 
-        "TEST_KEY_123",
-        "ARKADASININ_KEYI"
+        "16047513980263920565", // Senin Keyin
+        "TEST_999"
     ];
 
-    // 1. Veri kontrolü
-    if (!user || !msg) {
-        return res.status(400).send("Eksik veri gonderildi.");
+    // Kullanıcı IP'sini al (Vercel üzerinden)
+    const userIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+    // 3. GÜVENLİK KONTROLÜ
+    if (!user) {
+        return res.status(400).send("Gecersiz_Sorgu");
     }
 
-    // 2. Lisans kontrolü
-    const lisansliMi = izinliAnahtarlar.includes(user);
-    const durumBasligi = lisansliMi ? "✅ Lisans Onaylandi" : "❌ Lisanssiz Giris Denemesi";
-    const durumRengi = lisansliMi ? 5814783 : 15548997; // Yeşil veya Kırmızı
+    const isAuthorized = izinliAnahtarlar.includes(user);
+    const statusTitle = isAuthorized ? "✅ ERİŞİM ONAYLANDI" : "❌ YETKİSİZ GİRİŞ DENEMESİ";
+    const statusColor = isAuthorized ? 0x2ECC71 : 0xE74C3C; // Yeşil : Kırmızı
 
-    // 3. Discord Mesaj Yapısı (Embed)
+    // 4. DISCORD EMBED YAPISI (Zengin Görünüm)
     const discordPayload = {
+        username: "MACHO SİSTEM KONTROL",
+        avatar_url: "https://i.imgur.com/8nNf9fK.png",
         embeds: [{
-            title: durumBasligi,
-            color: durumRengi,
+            title: statusTitle,
+            color: statusColor,
+            description: `**Kullanıcı Bilgileri ve Sistem Durumu**`,
             fields: [
-                { name: "Kullanıcı Anahtarı", value: `\`${user}\``, inline: false },
-                { name: "Yapılan İşlem", value: `**${msg}**`, inline: true },
-                { name: "Erişim Durumu", value: lisansliMi ? "Erisim Verildi" : "Erisim Reddedildi", inline: true }
+                { name: "🔑 Lisans Anahtarı", value: `\`${user}\``, inline: false },
+                { name: "🌐 Kullanıcı IP", value: `\`${userIP}\``, inline: true },
+                { name: "🖥️ Bilgisayar Adı", value: `\`${pcname || "Bilinmiyor"}\``, inline: true },
+                { name: "🎮 Sunucu Durumu", value: `\`${server || "FiveM Bağlantısı"}\``, inline: false },
+                { name: "📝 Yapılan İşlem", value: `**${msg || "Sistem Sorgusu"}**`, inline: true },
+                { name: "⏰ Zaman", value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true }
             ],
-            footer: { text: "Macho Executor Auth System" },
+            footer: { text: "Macho Advanced Auth v2.0 | Vercel Serverless" },
             timestamp: new Date()
         }]
     };
 
-    // 4. Discord'a Gönder
+    // 5. DISCORD'A GÖNDER
     try {
         await fetch(webhookUrl, {
             method: 'POST',
@@ -45,14 +51,13 @@ export default async function handler(req, res) {
             body: JSON.stringify(discordPayload)
         });
     } catch (err) {
-        console.error("Discord gonderim hatasi:", err);
+        console.error("Discord hatası:", err);
     }
 
-    // 5. Lua tarafına cevap dön
-    if (!lisansliMi) {
-        return res.status(403).send("Lisanssiz Kullanici!");
+    // 6. LUA TARAFINA CEVAP DÖN
+    if (isAuthorized) {
+        return res.status(200).send("OK_ONAY_VERILDI");
+    } else {
+        return res.status(200).send("Giris_Yasaktir");
     }
-
-    res.status(200).send("Onaylandi");
 }
-
