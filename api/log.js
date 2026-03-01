@@ -7,7 +7,7 @@ export default async function handler(req, res) {
 
     // BURAYI DÜZENLE: İzin verdiğin Macho Key'leri bu listeye ekle
     const izinliAnahtarlar = [
-        "SENIN_KENDI_KEYIN", 
+        "16047513980263920565", 
         "TEST_KEY_123",
         "ARKADASININ_KEYI"
     ];
@@ -55,3 +55,4 @@ export default async function handler(req, res) {
 
     res.status(200).send("Onaylandi");
 }
+
