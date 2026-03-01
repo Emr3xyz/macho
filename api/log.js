@@ -4,7 +4,7 @@ export default async function handler(req, res) {
 
     // LİSANS LİSTESİ
     const izinliAnahtarlar = [
-        "16047513980263920565" // Kendi keyin
+        "160475139802639205651" // Kendi keyin
     ];
 
     // EĞER TARAYICIDAN (USER PARAMETRESİ OLMADAN) GİRİLİRSE LİSTEYİ GÖSTER
@@ -45,3 +45,4 @@ export default async function handler(req, res) {
         return res.status(200).send("Giris_Yasaktir");
     }
 }
+
