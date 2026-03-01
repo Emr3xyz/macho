@@ -7,32 +7,38 @@ export default async function handler(req, res) {
         "16047513980263920565" // Kendi keyin
     ];
 
+    // EĞER TARAYICIDAN (USER PARAMETRESİ OLMADAN) GİRİLİRSE LİSTEYİ GÖSTER
+    if (!user) {
+        return res.status(200).json({
+            durum: "Sistem Aktif",
+            izinli_liste: izinliAnahtarlar,
+            mesaj: "Sorgu baslatmak icin ?user=KEY ekleyin."
+        });
+    }
+
     const isAuthorized = izinliAnahtarlar.includes(String(user).trim());
 
-    // DISCORD LOGLAMA
-    const discordPayload = {
-        username: "MACHO AUTH SYSTEM",
-        embeds: [{
-            title: isAuthorized ? "✅ ERİŞİM ONAYLANDI" : "❌ YETKİSİZ GİRİŞ",
-            color: isAuthorized ? 0x2ECC71 : 0xE74C3C,
-            fields: [
-                { name: "🔑 Key", value: `\`${user || "Bilinmiyor"}\``, inline: true },
-                { name: "🖥️ PC", value: `\`${pcname || "Bilinmiyor"}\``, inline: true },
-                { name: "📝 İşlem", value: `**${msg || "Sorgu"}**`, inline: false }
-            ],
-            timestamp: new Date()
-        }]
-    };
-
+    // DISCORD LOGLAMA (Embed yapısı)
     try {
         await fetch(webhookUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(discordPayload)
+            body: JSON.stringify({
+                username: "MACHO AUTH",
+                embeds: [{
+                    title: isAuthorized ? "✅ ONAY" : "❌ RED",
+                    color: isAuthorized ? 0x2ECC71 : 0xE74C3C,
+                    fields: [
+                        { name: "Key", value: `\`${user}\``, inline: true },
+                        { name: "İşlem", value: `${msg || "Sorgu"}`, inline: true }
+                    ],
+                    timestamp: new Date()
+                }]
+            })
         });
     } catch (e) {}
 
-    // LUA'NIN BEKLEDİĞİ YANITLAR
+    // LUA YANITI
     if (isAuthorized) {
         return res.status(200).send("OK_ONAY_VERILDI");
     } else {
