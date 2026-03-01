@@ -6,7 +6,7 @@ export default async function handler(req, res) {
 
     // 2. LİSANS LİSTESİ: İzin verdiğin keyleri buraya ekle
     const izinliAnahtarlar = [
-        "160475139802639205653", // Senin Keyin
+        "16047513980263920565", // Senin Keyin
         "TEST_999"
     ];
 
@@ -61,4 +61,5 @@ export default async function handler(req, res) {
         return res.status(200).send("Giris_Yasaktir");
     }
 }
+
 
